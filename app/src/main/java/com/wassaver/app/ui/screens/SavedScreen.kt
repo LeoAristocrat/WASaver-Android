@@ -43,14 +43,23 @@ fun SavedScreen(
 ) {
     val savedStatuses by viewModel.savedFilteredStatuses.collectAsState()
     val savedFilter by viewModel.savedFilter.collectAsState()
+    val settings by viewModel.settings.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     var selectionMode by remember { mutableStateOf(false) }
     var selectedItems by remember { mutableStateOf(setOf<String>()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    val visibleSavedStatuses = remember(savedStatuses, searchQuery) {
+        val query = searchQuery.trim().lowercase()
+        if (query.isBlank()) savedStatuses
+        else savedStatuses.filter { it.name.lowercase().contains(query) }
+    }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadSavedStatuses()
+    LaunchedEffect(settings.autoRefreshSaved) {
+        if (settings.autoRefreshSaved) {
+            viewModel.loadSavedStatuses()
+        }
     }
 
     // Reset selection when exiting selection mode
@@ -123,15 +132,15 @@ fun SavedScreen(
                         // Select All button
                         TextButton(
                             onClick = {
-                                selectedItems = if (selectedItems.size == savedStatuses.size) {
+                                selectedItems = if (selectedItems.size == visibleSavedStatuses.size) {
                                     emptySet()
                                 } else {
-                                    savedStatuses.map { it.uri.toString() }.toSet()
+                                    visibleSavedStatuses.map { it.uri.toString() }.toSet()
                                 }
                             }
                         ) {
                             Text(
-                                if (selectedItems.size == savedStatuses.size) "Deselect All" else "Select All",
+                                if (selectedItems.size == visibleSavedStatuses.size) "Deselect All" else "Select All",
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
@@ -210,6 +219,16 @@ fun SavedScreen(
                         }
                     }
                 }
+
+                AnimatedVisibility(visible = !selectionMode) {
+                    MediaSearchAndSortBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        sortOption = settings.savedSort,
+                        onSortSelected = viewModel::updateSavedSort,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
 
@@ -232,7 +251,7 @@ fun SavedScreen(
                     )
                 }
             }
-        } else if (savedStatuses.isEmpty()) {
+        } else if (visibleSavedStatuses.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -249,14 +268,18 @@ fun SavedScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No Saved Statuses",
+                        text = if (searchQuery.isBlank()) "No Saved Statuses" else "No Matching Saved Items",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Statuses you save will appear here. Go to the home tab to view and save statuses.",
+                        text = if (searchQuery.isBlank()) {
+                            "Statuses you save will appear here. Go to the home tab to view and save statuses."
+                        } else {
+                            "Try a different filename or clear the search to see all saved items."
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline,
                         textAlign = TextAlign.Center
@@ -265,7 +288,7 @@ fun SavedScreen(
             }
         } else {
             SavedStatusGrid(
-                statuses = savedStatuses,
+                statuses = visibleSavedStatuses,
                 selectionMode = selectionMode,
                 selectedItems = selectedItems,
                 onStatusClick = { status, index ->
@@ -277,7 +300,7 @@ fun SavedScreen(
                             selectedItems + uri
                         }
                     } else {
-                        onStatusClick(status, index, savedStatuses)
+                        onStatusClick(status, index, visibleSavedStatuses)
                     }
                 },
                 onDeleteClick = { status ->

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,8 +42,24 @@ fun ViewOnceScreen(
     val selectedWhatsApp by viewModel.viewOnceWhatsApp.collectAsState()
     val selectedFilter by viewModel.viewOnceFilter.collectAsState()
     val media by viewModel.filteredViewOnceMedia.collectAsState()
+    val settings by viewModel.settings.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val permissions by viewModel.viewOncePermissions.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedItems by remember { mutableStateOf(setOf<String>()) }
+    val context = LocalContext.current
+    val visibleMedia = remember(media, searchQuery) {
+        val query = searchQuery.trim().lowercase()
+        if (query.isBlank()) media
+        else media.filter { it.name.lowercase().contains(query) }
+    }
+
+    LaunchedEffect(selectionMode) {
+        if (!selectionMode) {
+            selectedItems = emptySet()
+        }
+    }
 
     val hasImagePerm = permissions["img"] == true
     val hasVideoPerm = permissions["vid"] == true
@@ -72,8 +89,8 @@ fun ViewOnceScreen(
     }
 
     // Auto-load when permissions become available
-    LaunchedEffect(hasImagePerm, hasVideoPerm) {
-        if (hasImagePerm || hasVideoPerm) {
+    LaunchedEffect(hasImagePerm, hasVideoPerm, settings.autoRefreshViewOnce) {
+        if ((hasImagePerm || hasVideoPerm) && settings.autoRefreshViewOnce) {
             viewModel.loadViewOnceMedia()
         }
     }
@@ -93,31 +110,104 @@ fun ViewOnceScreen(
                         .padding(horizontal = if (onBack != null) 4.dp else 16.dp, vertical = if (onBack != null) 4.dp else 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack) {
+                    if (selectionMode) {
+                        IconButton(onClick = { selectionMode = false }) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                Icons.Default.Close,
+                                contentDescription = "Exit selection",
                                 tint = Color.White
                             )
                         }
                         Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${selectedItems.size} selected",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    } else {
+                        if (onBack != null) {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Color.White
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Icon(
+                            imageVector = Icons.Default.PermMedia,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Media Browser",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
-                    Icon(
-                        imageVector = Icons.Default.PermMedia,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Media Browser",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
                     Spacer(modifier = Modifier.weight(1f))
-                    if (hasAnyPermission) {
+                    if (selectionMode) {
+                        if (visibleMedia.isNotEmpty()) {
+                            TextButton(
+                                onClick = {
+                                    selectedItems = if (selectedItems.size == visibleMedia.size) {
+                                        emptySet()
+                                    } else {
+                                        visibleMedia.map { it.uri.toString() }.toSet()
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    if (selectedItems.size == visibleMedia.size) "Deselect All" else "Select All",
+                                    color = Color.White
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                shareStatuses(
+                                    context = context,
+                                    statuses = visibleMedia.filter { it.uri.toString() in selectedItems }
+                                )
+                            },
+                            enabled = selectedItems.isNotEmpty()
+                        ) {
+                            Icon(
+                                Icons.Default.Share,
+                                contentDescription = "Share selected",
+                                tint = if (selectedItems.isNotEmpty()) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                viewModel.saveStatuses(
+                                    visibleMedia.filter { it.uri.toString() in selectedItems }
+                                )
+                                selectionMode = false
+                            },
+                            enabled = selectedItems.isNotEmpty()
+                        ) {
+                            Icon(
+                                Icons.Default.Download,
+                                contentDescription = "Save selected",
+                                tint = if (selectedItems.isNotEmpty()) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                    } else if (hasAnyPermission) {
+                        if (visibleMedia.isNotEmpty()) {
+                            IconButton(onClick = { selectionMode = true }) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = "Select items",
+                                    tint = Color.White
+                                )
+                            }
+                        }
                         IconButton(onClick = { viewModel.loadViewOnceMedia() }) {
                             Icon(
                                 Icons.Default.Refresh,
@@ -209,6 +299,14 @@ fun ViewOnceScreen(
                             )
                         }
                     }
+
+                    MediaSearchAndSortBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        sortOption = settings.viewOnceSort,
+                        onSortSelected = viewModel::updateViewOnceSort,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
                 }
             }
         }
@@ -249,7 +347,7 @@ fun ViewOnceScreen(
                     )
                 }
             }
-        } else if (media.isEmpty()) {
+        } else if (visibleMedia.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -266,14 +364,18 @@ fun ViewOnceScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No Media Found",
+                        text = if (searchQuery.isBlank()) "No Media Found" else "No Matching Media",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Photos and videos from WhatsApp's private media folders will appear here. Open them in WhatsApp first.",
+                        text = if (searchQuery.isBlank()) {
+                            "Photos and videos from WhatsApp's private media folders will appear here. Open them in WhatsApp first."
+                        } else {
+                            "Try a different filename or clear the search to see all media."
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline,
                         textAlign = TextAlign.Center
@@ -316,8 +418,14 @@ fun ViewOnceScreen(
             }
         } else {
             StatusGrid(
-                statuses = media,
+                statuses = visibleMedia,
+                selectionMode = selectionMode,
+                selectedItems = selectedItems,
                 onStatusClick = onStatusClick,
+                onStatusSelectionToggle = { status ->
+                    val key = status.uri.toString()
+                    selectedItems = if (key in selectedItems) selectedItems - key else selectedItems + key
+                },
                 onSaveClick = { viewModel.saveStatus(it) }
             )
         }

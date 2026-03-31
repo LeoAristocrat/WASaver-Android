@@ -5,9 +5,12 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.wassaver.app.data.AppPreferences
 import com.wassaver.app.data.StatusRepository
 import com.wassaver.app.data.model.MediaFilter
+import com.wassaver.app.data.model.SortOption
 import com.wassaver.app.data.model.StatusFile
+import com.wassaver.app.data.model.ThemePreference
 import com.wassaver.app.data.model.WhatsAppType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +23,9 @@ import kotlinx.coroutines.withContext
 class StatusViewModel(application: Application) : AndroidViewModel(application) {
 
     val repository = StatusRepository(application)
+    private val preferences = AppPreferences(application)
     val viewOnceWatcher = com.wassaver.app.data.ViewOnceWatcher(application, repository)
+    val settings = preferences.settings
 
     private val _selectedWhatsApp = MutableStateFlow(WhatsAppType.WHATSAPP)
     val selectedWhatsApp: StateFlow<WhatsAppType> = _selectedWhatsApp.asStateFlow()
@@ -68,34 +73,28 @@ class StatusViewModel(application: Application) : AndroidViewModel(application) 
 
         // Combine allStatuses and selectedFilter to produce filteredStatuses
         viewModelScope.launch {
-            combine(_allStatuses, _selectedFilter) { statuses, filter ->
-                when (filter) {
-                    MediaFilter.ALL -> statuses
-                    MediaFilter.PHOTOS -> statuses.filter { it.isImage }
-                    MediaFilter.VIDEOS -> statuses.filter { it.isVideo }
-                }
+            combine(_allStatuses, _selectedFilter, settings) { statuses, filter, appSettings ->
+                statuses
+                    .filterBy(filter)
+                    .sortedWithOption(appSettings.statusSort)
             }.collect { _filteredStatuses.value = it }
         }
 
         // Combine savedStatuses and savedFilter
         viewModelScope.launch {
-            combine(_savedStatuses, _savedFilter) { statuses, filter ->
-                when (filter) {
-                    MediaFilter.ALL -> statuses
-                    MediaFilter.PHOTOS -> statuses.filter { it.isImage }
-                    MediaFilter.VIDEOS -> statuses.filter { it.isVideo }
-                }
+            combine(_savedStatuses, _savedFilter, settings) { statuses, filter, appSettings ->
+                statuses
+                    .filterBy(filter)
+                    .sortedWithOption(appSettings.savedSort)
             }.collect { _savedFilteredStatuses.value = it }
         }
 
         // Combine viewOnce media and filter
         viewModelScope.launch {
-            combine(_allViewOnceMedia, _viewOnceFilter) { media, filter ->
-                when (filter) {
-                    MediaFilter.ALL -> media
-                    MediaFilter.PHOTOS -> media.filter { it.isImage }
-                    MediaFilter.VIDEOS -> media.filter { it.isVideo }
-                }
+            combine(_allViewOnceMedia, _viewOnceFilter, settings) { media, filter, appSettings ->
+                media
+                    .filterBy(filter)
+                    .sortedWithOption(appSettings.viewOnceSort)
             }.collect { _filteredViewOnceMedia.value = it }
         }
     }
@@ -125,6 +124,34 @@ class StatusViewModel(application: Application) : AndroidViewModel(application) 
 
     fun selectSavedFilter(filter: MediaFilter) {
         _savedFilter.value = filter
+    }
+
+    fun updateThemePreference(value: ThemePreference) {
+        preferences.updateThemePreference(value)
+    }
+
+    fun updateStatusSort(value: SortOption) {
+        preferences.updateStatusSort(value)
+    }
+
+    fun updateSavedSort(value: SortOption) {
+        preferences.updateSavedSort(value)
+    }
+
+    fun updateViewOnceSort(value: SortOption) {
+        preferences.updateViewOnceSort(value)
+    }
+
+    fun updateAutoRefreshStatuses(enabled: Boolean) {
+        preferences.updateAutoRefreshStatuses(enabled)
+    }
+
+    fun updateAutoRefreshSaved(enabled: Boolean) {
+        preferences.updateAutoRefreshSaved(enabled)
+    }
+
+    fun updateAutoRefreshViewOnce(enabled: Boolean) {
+        preferences.updateAutoRefreshViewOnce(enabled)
     }
 
     fun loadStatuses() {
@@ -218,6 +245,33 @@ class StatusViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun saveStatuses(statusFiles: List<StatusFile>) {
+        viewModelScope.launch {
+            if (statusFiles.isEmpty()) return@launch
+
+            val savedCount = withContext(Dispatchers.IO) {
+                statusFiles.count { repository.saveStatus(it) }
+            }
+
+            if (savedCount > 0) {
+                Toast.makeText(
+                    getApplication(),
+                    "$savedCount item${if (savedCount > 1) "s" else ""} saved to Gallery/WASSaver",
+                    Toast.LENGTH_SHORT
+                ).show()
+                loadStatuses()
+                loadSavedStatuses()
+                loadViewOnceMedia()
+            } else {
+                Toast.makeText(
+                    getApplication(),
+                    "Failed to save selected items",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     fun deleteSavedStatus(statusFile: StatusFile) {
         viewModelScope.launch {
             val success = withContext(Dispatchers.IO) {
@@ -259,6 +313,25 @@ class StatusViewModel(application: Application) : AndroidViewModel(application) 
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
+
+    private fun List<StatusFile>.filterBy(filter: MediaFilter): List<StatusFile> {
+        return when (filter) {
+            MediaFilter.ALL -> this
+            MediaFilter.PHOTOS -> filter { it.isImage }
+            MediaFilter.VIDEOS -> filter { it.isVideo }
+        }
+    }
+
+    private fun List<StatusFile>.sortedWithOption(sortOption: SortOption): List<StatusFile> {
+        return when (sortOption) {
+            SortOption.NEWEST -> sortedByDescending { it.dateModified }
+            SortOption.OLDEST -> sortedBy { it.dateModified }
+            SortOption.NAME_ASC -> sortedBy { it.name.lowercase() }
+            SortOption.NAME_DESC -> sortedByDescending { it.name.lowercase() }
+            SortOption.SIZE_DESC -> sortedByDescending { it.size }
+            SortOption.SIZE_ASC -> sortedBy { it.size }
         }
     }
 }

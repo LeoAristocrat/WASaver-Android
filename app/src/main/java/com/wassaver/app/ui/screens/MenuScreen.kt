@@ -35,7 +35,8 @@ enum class MenuDestination {
     STATUS_SPLITTER,
     DIRECT_CHAT,
     UPDATE,
-    ABOUT
+    ABOUT,
+    SETTINGS
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -200,6 +201,14 @@ fun MenuScreen(
                 description = "App info, credits & version details",
                 gradientColors = listOf(Color(0xFF607D8B), Color(0xFF455A64)),
                 onClick = { onNavigate(MenuDestination.ABOUT) }
+            )
+
+            MenuItemCard(
+                icon = Icons.Default.Settings,
+                title = "Settings",
+                description = "Theme, auto-refresh, and sorting preferences",
+                gradientColors = listOf(Color(0xFF795548), Color(0xFF5D4037)),
+                onClick = { onNavigate(MenuDestination.SETTINGS) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))

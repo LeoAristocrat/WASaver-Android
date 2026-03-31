@@ -2,10 +2,12 @@ package com.wassaver.app.ui.screens
 
 import android.content.Intent
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -53,13 +55,29 @@ fun HomeScreen(
     val selectedWhatsApp by viewModel.selectedWhatsApp.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val statuses by viewModel.filteredStatuses.collectAsState()
+    val settings by viewModel.settings.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val permissions by viewModel.hasPermission.collectAsState()
     val hasCurrentPermission = permissions[selectedWhatsApp] == true
+    var searchQuery by remember { mutableStateOf("") }
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedItems by remember { mutableStateOf(setOf<String>()) }
+    val visibleStatuses = remember(statuses, searchQuery) {
+        val query = searchQuery.trim().lowercase()
+        if (query.isBlank()) statuses
+        else statuses.filter { it.name.lowercase().contains(query) }
+    }
+    val context = LocalContext.current
+
+    LaunchedEffect(selectionMode) {
+        if (!selectionMode) {
+            selectedItems = emptySet()
+        }
+    }
 
     // Auto-load statuses when screen appears and has permission
-    LaunchedEffect(hasCurrentPermission) {
-        if (hasCurrentPermission) {
+    LaunchedEffect(hasCurrentPermission, settings.autoRefreshStatuses) {
+        if (hasCurrentPermission && settings.autoRefreshStatuses) {
             viewModel.loadStatuses()
         }
     }
@@ -87,36 +105,111 @@ fun HomeScreen(
                         .padding(horizontal = if (onBack != null) 4.dp else 16.dp, vertical = if (onBack != null) 4.dp else 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack) {
+                    if (selectionMode) {
+                        IconButton(onClick = { selectionMode = false }) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                Icons.Default.Close,
+                                contentDescription = "Exit selection",
                                 tint = Color.White
                             )
                         }
                         Spacer(modifier = Modifier.width(4.dp))
-                    }
-                    Icon(
-                        imageVector = Icons.Default.SaveAlt,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Status Viewer",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = { viewModel.loadStatuses() }) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "Refresh",
-                            tint = Color.White
+                        Text(
+                            text = "${selectedItems.size} selected",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
+                    } else {
+                        if (onBack != null) {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Color.White
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Icon(
+                            imageVector = Icons.Default.SaveAlt,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Status Viewer",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (selectionMode) {
+                        if (visibleStatuses.isNotEmpty()) {
+                            TextButton(
+                                onClick = {
+                                    selectedItems = if (selectedItems.size == visibleStatuses.size) {
+                                        emptySet()
+                                    } else {
+                                        visibleStatuses.map { it.uri.toString() }.toSet()
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    if (selectedItems.size == visibleStatuses.size) "Deselect All" else "Select All",
+                                    color = Color.White
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                shareStatuses(
+                                    context = context,
+                                    statuses = visibleStatuses.filter { it.uri.toString() in selectedItems }
+                                )
+                            },
+                            enabled = selectedItems.isNotEmpty()
+                        ) {
+                            Icon(
+                                Icons.Default.Share,
+                                contentDescription = "Share selected",
+                                tint = if (selectedItems.isNotEmpty()) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                viewModel.saveStatuses(
+                                    visibleStatuses.filter { it.uri.toString() in selectedItems }
+                                )
+                                selectionMode = false
+                            },
+                            enabled = selectedItems.isNotEmpty()
+                        ) {
+                            Icon(
+                                Icons.Default.Download,
+                                contentDescription = "Save selected",
+                                tint = if (selectedItems.isNotEmpty()) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                    } else {
+                        if (visibleStatuses.isNotEmpty()) {
+                            IconButton(onClick = { selectionMode = true }) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = "Select items",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                        IconButton(onClick = { viewModel.loadStatuses() }) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
 
@@ -201,6 +294,14 @@ fun HomeScreen(
                             )
                         }
                     }
+
+                    MediaSearchAndSortBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        sortOption = settings.statusSort,
+                        onSortSelected = viewModel::updateStatusSort,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
                 }
             }
         }
@@ -238,13 +339,19 @@ fun HomeScreen(
                     )
                 }
             }
-        } else if (statuses.isEmpty()) {
-            EmptyStatusView(selectedFilter)
+        } else if (visibleStatuses.isEmpty()) {
+            EmptyStatusView(selectedFilter, hasSearch = searchQuery.isNotBlank())
         } else {
             // Status Grid
             StatusGrid(
-                statuses = statuses,
+                statuses = visibleStatuses,
+                selectionMode = selectionMode,
+                selectedItems = selectedItems,
                 onStatusClick = onStatusClick,
+                onStatusSelectionToggle = { status ->
+                    val key = status.uri.toString()
+                    selectedItems = if (key in selectedItems) selectedItems - key else selectedItems + key
+                },
                 onSaveClick = { viewModel.saveStatus(it) }
             )
         }
@@ -353,7 +460,7 @@ private fun PermissionRequestCard(
 }
 
 @Composable
-private fun EmptyStatusView(filter: MediaFilter) {
+private fun EmptyStatusView(filter: MediaFilter, hasSearch: Boolean) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -375,9 +482,9 @@ private fun EmptyStatusView(filter: MediaFilter) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = when (filter) {
-                    MediaFilter.ALL -> "No Statuses Found"
-                    MediaFilter.PHOTOS -> "No Photos Found"
-                    MediaFilter.VIDEOS -> "No Videos Found"
+                    MediaFilter.ALL -> if (hasSearch) "No Matching Statuses" else "No Statuses Found"
+                    MediaFilter.PHOTOS -> if (hasSearch) "No Matching Photos" else "No Photos Found"
+                    MediaFilter.VIDEOS -> if (hasSearch) "No Matching Videos" else "No Videos Found"
                 },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
@@ -385,7 +492,11 @@ private fun EmptyStatusView(filter: MediaFilter) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "View some statuses on WhatsApp first, then come back here to save them.",
+                text = if (hasSearch) {
+                    "Try a different filename or clear the search to see more results."
+                } else {
+                    "View some statuses on WhatsApp first, then come back here to save them."
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
                 textAlign = TextAlign.Center
@@ -394,10 +505,14 @@ private fun EmptyStatusView(filter: MediaFilter) {
     }
 }
 
+
 @Composable
 fun StatusGrid(
     statuses: List<StatusFile>,
+    selectionMode: Boolean = false,
+    selectedItems: Set<String> = emptySet(),
     onStatusClick: (StatusFile, Int, List<StatusFile>) -> Unit,
+    onStatusSelectionToggle: (StatusFile) -> Unit = {},
     onSaveClick: (StatusFile) -> Unit
 ) {
     LazyVerticalGrid(
@@ -410,9 +525,15 @@ fun StatusGrid(
         items(statuses, key = { it.uri.toString() }) { status ->
             StatusGridItem(
                 status = status,
+                selectionMode = selectionMode,
+                isSelected = status.uri.toString() in selectedItems,
                 onClick = {
-                    val index = statuses.indexOf(status)
-                    onStatusClick(status, index, statuses)
+                    if (selectionMode) {
+                        onStatusSelectionToggle(status)
+                    } else {
+                        val index = statuses.indexOf(status)
+                        onStatusClick(status, index, statuses)
+                    }
                 },
                 onSaveClick = { onSaveClick(status) }
             )
@@ -423,6 +544,8 @@ fun StatusGrid(
 @Composable
 private fun StatusGridItem(
     status: StatusFile,
+    selectionMode: Boolean,
+    isSelected: Boolean,
     onClick: () -> Unit,
     onSaveClick: () -> Unit
 ) {
@@ -434,7 +557,8 @@ private fun StatusGridItem(
             .aspectRatio(0.75f)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        border = if (isSelected) BorderStroke(3.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // Thumbnail
@@ -458,8 +582,41 @@ private fun StatusGridItem(
                 modifier = Modifier.fillMaxSize()
             )
 
+            if (selectionMode) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
+                            else Color.Transparent
+                        )
+                )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else Color.White.copy(alpha = 0.85f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isSelected) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = "Selected",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
             // Video play icon overlay
-            if (status.isVideo) {
+            if (status.isVideo && !selectionMode) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -517,7 +674,7 @@ private fun StatusGridItem(
                             tint = WhatsAppGreen,
                             modifier = Modifier.size(22.dp)
                         )
-                    } else {
+                    } else if (!selectionMode) {
                         IconButton(
                             onClick = onSaveClick,
                             modifier = Modifier.size(28.dp)
@@ -533,5 +690,36 @@ private fun StatusGridItem(
                 }
             }
         }
+    }
+}
+
+fun shareStatuses(context: android.content.Context, statuses: List<StatusFile>) {
+    if (statuses.isEmpty()) return
+
+    val uris = ArrayList(statuses.map { it.uri })
+    val hasMixedMedia = statuses.any { it.isVideo } && statuses.any { it.isImage }
+    val mimeType = when {
+        hasMixedMedia -> "*/*"
+        statuses.first().isVideo -> "video/*"
+        else -> "image/*"
+    }
+
+    try {
+        val intent = if (uris.size == 1) {
+            Intent(Intent.ACTION_SEND).apply {
+                type = mimeType
+                putExtra(Intent.EXTRA_STREAM, uris.first())
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        } else {
+            Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = mimeType
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
+        context.startActivity(Intent.createChooser(intent, "Share via"))
+    } catch (_: Exception) {
+        Toast.makeText(context, "Failed to share selected items", Toast.LENGTH_SHORT).show()
     }
 }
