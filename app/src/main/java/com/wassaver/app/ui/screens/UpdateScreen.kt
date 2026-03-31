@@ -318,7 +318,7 @@ private fun UpdateAvailableCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -409,7 +409,7 @@ private fun ReleaseCard(
             containerColor = if (isCurrent)
                 WhatsAppGreen.copy(alpha = 0.08f)
             else
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                MaterialTheme.colorScheme.surfaceContainerHigh
         )
     ) {
         Row(

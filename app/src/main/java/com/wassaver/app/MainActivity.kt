@@ -47,70 +47,76 @@ fun MainApp() {
         }
     }
 
-    when {
-        // Full-screen status viewer (highest priority)
-        viewerStatuses != null -> {
-            StatusViewerScreen(
-                statusFiles = viewerStatuses!!,
-                initialIndex = viewerInitialIndex,
-                viewModel = viewModel,
-                onBack = { viewerStatuses = null }
-            )
-        }
-
-        // Sub-screens navigated from menu
-        currentScreen != null -> {
-            when (currentScreen) {
-                MenuDestination.STATUS_VIEWER -> HomeScreen(
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) {
+        when {
+            // Full-screen status viewer (highest priority)
+            viewerStatuses != null -> {
+                StatusViewerScreen(
+                    statusFiles = viewerStatuses!!,
+                    initialIndex = viewerInitialIndex,
                     viewModel = viewModel,
-                    onStatusClick = { _, index, statuses ->
-                        viewerStatuses = statuses
-                        viewerInitialIndex = index
-                    },
-                    onBack = { currentScreen = null }
+                    onBack = { viewerStatuses = null }
                 )
-                MenuDestination.MEDIA_BROWSER -> ViewOnceScreen(
-                    viewModel = viewModel,
-                    onStatusClick = { _, index, statuses ->
-                        viewerStatuses = statuses
-                        viewerInitialIndex = index
-                    },
-                    onBack = { currentScreen = null }
-                )
-                MenuDestination.SAVED_STATUSES -> SavedScreen(
-                    viewModel = viewModel,
-                    onStatusClick = { _, index, statuses ->
-                        viewerStatuses = statuses
-                        viewerInitialIndex = index
-                    },
-                    onBack = { currentScreen = null }
-                )
-                MenuDestination.DELETED_MESSAGES -> DeletedMessagesScreen(
-                    onBack = { currentScreen = null }
-                )
-                MenuDestination.STATUS_SPLITTER -> StatusSplitterScreen(
-                    onBack = { currentScreen = null }
-                )
-                MenuDestination.DIRECT_CHAT -> DirectChatScreen(
-                    onBack = { currentScreen = null }
-                )
-                MenuDestination.UPDATE -> UpdateScreen(
-                    onBack = { currentScreen = null }
-                )
-                MenuDestination.ABOUT -> AboutScreen(
-                    onBack = { currentScreen = null }
-                )
-                else -> { /* exhaustive */ }
             }
-        }
 
-        // Home menu dashboard
-        else -> {
-            MenuScreen(
-                onNavigate = { destination ->
-                    currentScreen = destination
+            // Sub-screens navigated from menu
+            currentScreen != null -> {
+                when (currentScreen) {
+                    MenuDestination.STATUS_VIEWER -> HomeScreen(
+                        viewModel = viewModel,
+                        onStatusClick = { _, index, statuses ->
+                            viewerStatuses = statuses
+                            viewerInitialIndex = index
+                        },
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.MEDIA_BROWSER -> ViewOnceScreen(
+                        viewModel = viewModel,
+                        onStatusClick = { _, index, statuses ->
+                            viewerStatuses = statuses
+                            viewerInitialIndex = index
+                        },
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.SAVED_STATUSES -> SavedScreen(
+                        viewModel = viewModel,
+                        onStatusClick = { _, index, statuses ->
+                            viewerStatuses = statuses
+                            viewerInitialIndex = index
+                        },
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.DELETED_MESSAGES -> DeletedMessagesScreen(
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.STATUS_SPLITTER -> StatusSplitterScreen(
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.DIRECT_CHAT -> DirectChatScreen(
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.UPDATE -> UpdateScreen(
+                        onBack = { currentScreen = null }
+                    )
+                    MenuDestination.ABOUT -> AboutScreen(
+                        onBack = { currentScreen = null }
+                    )
+                    else -> { /* exhaustive */ }
                 }
-            )
+            }
+
+            // Home menu dashboard
+            else -> {
+                MenuScreen(
+                    onNavigate = { destination ->
+                        currentScreen = destination
+                    }
+                )
+            }
         }
     }
 }
