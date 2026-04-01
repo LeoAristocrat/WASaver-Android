@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.theme
+package com.wassaver.app.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

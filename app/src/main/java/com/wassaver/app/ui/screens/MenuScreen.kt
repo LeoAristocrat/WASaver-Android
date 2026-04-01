@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.screens
+package com.wassaver.app.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -55,18 +55,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.leo.wasaver.data.UpdateChecker
-import com.leo.wasaver.ui.theme.AppInk
-import com.leo.wasaver.ui.theme.AboutFeatureGradient
-import com.leo.wasaver.ui.theme.DeletedFeatureGradient
-import com.leo.wasaver.ui.theme.DirectFeatureGradient
-import com.leo.wasaver.ui.theme.MediaFeatureGradient
-import com.leo.wasaver.ui.theme.SavedFeatureGradient
-import com.leo.wasaver.ui.theme.SettingsFeatureGradient
-import com.leo.wasaver.ui.theme.StatusFeatureGradient
-import com.leo.wasaver.ui.theme.UpdateFeatureGradient
-import com.leo.wasaver.ui.theme.AppShellGradient
-import com.leo.wasaver.ui.theme.AppShellGradientDark
+import com.wassaver.app.data.UpdateChecker
+import com.wassaver.app.ui.theme.AppInk
+import com.wassaver.app.ui.theme.AboutFeatureGradient
+import com.wassaver.app.ui.theme.DeletedFeatureGradient
+import com.wassaver.app.ui.theme.DirectFeatureGradient
+import com.wassaver.app.ui.theme.MediaFeatureGradient
+import com.wassaver.app.ui.theme.SavedFeatureGradient
+import com.wassaver.app.ui.theme.SettingsFeatureGradient
+import com.wassaver.app.ui.theme.StatusFeatureGradient
+import com.wassaver.app.ui.theme.UpdateFeatureGradient
+import com.wassaver.app.ui.theme.AppShellGradient
+import com.wassaver.app.ui.theme.AppShellGradientDark
 
 enum class MenuDestination {
     STATUS_VIEWER,

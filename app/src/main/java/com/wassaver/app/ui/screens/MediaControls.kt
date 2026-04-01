@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.screens
+package com.wassaver.app.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
@@ -23,7 +23,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.leo.wasaver.data.model.SortOption
+import com.wassaver.app.data.model.SortOption
 
 @Composable
 fun MediaSearchAndSortBar(

@@ -1,17 +1,17 @@
-package com.leo.wasaver.viewmodel
+package com.wassaver.app.viewmodel
 
 import android.app.Application
 import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.leo.wasaver.data.AppPreferences
-import com.leo.wasaver.data.StatusRepository
-import com.leo.wasaver.data.model.MediaFilter
-import com.leo.wasaver.data.model.SortOption
-import com.leo.wasaver.data.model.StatusFile
-import com.leo.wasaver.data.model.ThemePreference
-import com.leo.wasaver.data.model.WhatsAppType
+import com.wassaver.app.data.AppPreferences
+import com.wassaver.app.data.StatusRepository
+import com.wassaver.app.data.model.MediaFilter
+import com.wassaver.app.data.model.SortOption
+import com.wassaver.app.data.model.StatusFile
+import com.wassaver.app.data.model.ThemePreference
+import com.wassaver.app.data.model.WhatsAppType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +24,7 @@ class StatusViewModel(application: Application) : AndroidViewModel(application) 
 
     val repository = StatusRepository(application)
     private val preferences = AppPreferences(application)
-    val viewOnceWatcher = com.leo.wasaver.data.ViewOnceWatcher(application, repository)
+    val viewOnceWatcher = com.wassaver.app.data.ViewOnceWatcher(application, repository)
     val settings = preferences.settings
 
     private val _selectedWhatsApp = MutableStateFlow(WhatsAppType.WHATSAPP)

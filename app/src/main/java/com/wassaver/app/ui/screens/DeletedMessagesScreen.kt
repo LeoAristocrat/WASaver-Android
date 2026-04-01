@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.screens
+package com.wassaver.app.ui.screens
 
 import android.content.Intent
 import android.provider.Settings
@@ -29,10 +29,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.leo.wasaver.data.MessageStore
-import com.leo.wasaver.ui.theme.AppInk
-import com.leo.wasaver.ui.theme.PastelMint
-import com.leo.wasaver.ui.theme.StatusFeatureGradient
+import com.wassaver.app.data.MessageStore
+import com.wassaver.app.ui.theme.AppInk
+import com.wassaver.app.ui.theme.PastelMint
+import com.wassaver.app.ui.theme.StatusFeatureGradient
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,16 +120,20 @@ fun DeletedMessagesScreen(onBack: (() -> Unit)? = null) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Header
         Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary,
-            shadowElevation = 4.dp
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.84f),
+            shape = RoundedCornerShape(28.dp),
+            tonalElevation = 8.dp,
+            shadowElevation = 12.dp
         ) {
             Column {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
@@ -142,7 +146,7 @@ fun DeletedMessagesScreen(onBack: (() -> Unit)? = null) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Spacer(modifier = Modifier.width(4.dp))
@@ -153,46 +157,61 @@ fun DeletedMessagesScreen(onBack: (() -> Unit)? = null) {
                                 text = selectedSender ?: "",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = "${senderMessages.size} message${if (senderMessages.size != 1) "s" else ""} captured",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.White.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         // Clear this chat button
                         IconButton(onClick = { showClearSenderDialog = selectedSender }) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = "Clear chat", tint = Color.White)
+                            Icon(Icons.Default.DeleteSweep, contentDescription = "Clear chat", tint = MaterialTheme.colorScheme.primary)
                         }
                     } else {
                         // Main list header
-                        Icon(
-                            imageVector = Icons.Default.DeleteSweep,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Brush.linearGradient(StatusFeatureGradient)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteSweep,
+                                contentDescription = null,
+                                tint = AppInk,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Deleted Messages",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Column {
+                            Text(
+                                text = "Deleted Messages",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Recover captured notifications in one place.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         Spacer(modifier = Modifier.weight(1f))
                         if (isFeatureEnabled && hasNotificationAccess) {
                             IconButton(onClick = { showSearch = !showSearch }) {
                                 Icon(
                                     if (showSearch) Icons.Default.SearchOff else Icons.Default.Search,
                                     contentDescription = "Search",
-                                    tint = Color.White
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                             IconButton(onClick = { refreshMessages() }) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.White)
+                                Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = MaterialTheme.colorScheme.primary)
                             }
                         }
                     }
@@ -207,26 +226,19 @@ fun DeletedMessagesScreen(onBack: (() -> Unit)? = null) {
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 10.dp),
-                        placeholder = { Text("Search messages...", color = Color.White.copy(alpha = 0.6f)) },
+                        placeholder = { Text("Search messages...") },
                         leadingIcon = {
-                            Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.7f))
+                            Icon(Icons.Default.Search, contentDescription = null)
                         },
                         trailingIcon = {
                             if (searchQuery.isNotBlank()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.White.copy(alpha = 0.7f))
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear")
                                 }
                             }
                         },
                         singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color.White.copy(alpha = 0.5f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            cursorColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     )
                 }
             }

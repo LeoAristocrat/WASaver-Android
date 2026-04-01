@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.screens
+package com.wassaver.app.ui.screens
 
 import android.content.Intent
 import android.os.Build
@@ -35,17 +35,17 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
-import com.leo.wasaver.data.StatusRepository
-import com.leo.wasaver.data.model.MediaFilter
-import com.leo.wasaver.data.model.StatusFile
-import com.leo.wasaver.data.model.WhatsAppType
-import com.leo.wasaver.ui.theme.AppInk
-import com.leo.wasaver.ui.theme.AppShellGradient
-import com.leo.wasaver.ui.theme.AppShellGradientDark
-import com.leo.wasaver.ui.theme.PastelCoral
-import com.leo.wasaver.ui.theme.PastelMint
-import com.leo.wasaver.ui.theme.StatusFeatureGradient
-import com.leo.wasaver.viewmodel.StatusViewModel
+import com.wassaver.app.data.StatusRepository
+import com.wassaver.app.data.model.MediaFilter
+import com.wassaver.app.data.model.StatusFile
+import com.wassaver.app.data.model.WhatsAppType
+import com.wassaver.app.ui.theme.AppInk
+import com.wassaver.app.ui.theme.AppShellGradient
+import com.wassaver.app.ui.theme.AppShellGradientDark
+import com.wassaver.app.ui.theme.PastelCoral
+import com.wassaver.app.ui.theme.PastelMint
+import com.wassaver.app.ui.theme.StatusFeatureGradient
+import com.wassaver.app.viewmodel.StatusViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

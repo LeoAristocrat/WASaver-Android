@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.screens
+package com.wassaver.app.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,9 +28,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.leo.wasaver.data.model.SortOption
-import com.leo.wasaver.data.model.ThemePreference
-import com.leo.wasaver.viewmodel.StatusViewModel
+import com.wassaver.app.data.model.SortOption
+import com.wassaver.app.data.model.ThemePreference
+import com.wassaver.app.viewmodel.StatusViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

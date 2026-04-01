@@ -1,4 +1,4 @@
-package com.leo.wasaver.ui.screens
+package com.wassaver.app.ui.screens
 
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,13 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.leo.wasaver.data.StatusRepository
-import com.leo.wasaver.data.model.MediaFilter
-import com.leo.wasaver.data.model.StatusFile
-import com.leo.wasaver.data.model.WhatsAppType
-import com.leo.wasaver.ui.theme.AppInk
-import com.leo.wasaver.ui.theme.StatusFeatureGradient
-import com.leo.wasaver.viewmodel.StatusViewModel
+import com.wassaver.app.data.StatusRepository
+import com.wassaver.app.data.model.MediaFilter
+import com.wassaver.app.data.model.StatusFile
+import com.wassaver.app.data.model.WhatsAppType
+import com.wassaver.app.ui.theme.AppInk
+import com.wassaver.app.ui.theme.StatusFeatureGradient
+import com.wassaver.app.viewmodel.StatusViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

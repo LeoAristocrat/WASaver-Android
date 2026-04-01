@@ -1,4 +1,4 @@
-package com.leo.wasaver.data.model
+package com.wassaver.app.data.model
 
 enum class ThemePreference(val displayName: String) {
     SYSTEM("System"),

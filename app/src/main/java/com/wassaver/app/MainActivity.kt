@@ -1,4 +1,4 @@
-package com.leo.wasaver
+package com.wassaver.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,11 +15,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.leo.wasaver.data.model.ThemePreference
-import com.leo.wasaver.data.model.StatusFile
-import com.leo.wasaver.ui.screens.*
-import com.leo.wasaver.ui.theme.WASaverTheme
-import com.leo.wasaver.viewmodel.StatusViewModel
+import com.wassaver.app.data.model.ThemePreference
+import com.wassaver.app.data.model.StatusFile
+import com.wassaver.app.ui.screens.*
+import com.wassaver.app.ui.theme.WASaverTheme
+import com.wassaver.app.viewmodel.StatusViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

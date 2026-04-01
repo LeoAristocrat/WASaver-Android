@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.leo.wasaver"
+    namespace = "com.wassaver.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.leo.wasaver"
+        applicationId = "com.wassaver.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.4"
+        versionCode = 5
+        versionName = "1.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -1,4 +1,4 @@
-package com.leo.wasaver
+package com.wassaver.app
 
 import android.app.Application
 

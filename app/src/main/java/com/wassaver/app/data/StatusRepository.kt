@@ -1,4 +1,4 @@
-package com.leo.wasaver.data
+package com.wassaver.app.data
 
 import android.content.ContentValues
 import android.content.Context
@@ -9,8 +9,8 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.documentfile.provider.DocumentFile
-import com.leo.wasaver.data.model.StatusFile
-import com.leo.wasaver.data.model.WhatsAppType
+import com.wassaver.app.data.model.StatusFile
+import com.wassaver.app.data.model.WhatsAppType
 import java.io.File
 
 class StatusRepository(private val context: Context) {
