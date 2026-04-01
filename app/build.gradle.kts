@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.wassaver.app"
+    namespace = "com.leo.wasaver"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.wassaver.app"
+        applicationId = "com.leo.wasaver"
         minSdk = 26
         targetSdk = 35
         versionCode = 3

@@ -1,167 +1,124 @@
-# WASSaver - WhatsApp Status Saver & Tools
+# WASaver
 
-A feature-rich Android app to view, save, and manage WhatsApp statuses — plus powerful tools for video splitting, deleted message recovery, direct messaging, and more.
+WASaver is an Android app for saving WhatsApp statuses, browsing private media, recovering deleted messages from notifications, and opening direct chats without saving contacts.
 
-📥 **[Download Latest Release](https://github.com/LeoAristocrat/WASSaver-Android/releases)**
+[Download the latest release](https://github.com/LeoAristocrat/WASaver-Android/releases)
 
-## Features
+## Highlights
 
-### 📱 Home Menu Dashboard
-- Beautiful card-based navigation with all features organized into sections
-- Quick access to Status Tools, Sharing Tools, and App settings
+- Save photo and video statuses from both WhatsApp and WhatsApp Business
+- Browse private image and video folders before media disappears
+- Manage saved media with search, sorting, and bulk actions
+- Recover deleted messages locally through notification capture
+- Open direct chats without adding contacts first
+- Check GitHub releases from inside the app
+- Light and dark themes with a softer pastel UI refresh
 
-### 📥 Status Viewer
-- **WhatsApp & WA Business support** — Switch between WA and WAB status folders
-- **Media filters** — Filter by All, Photos, or Videos
-- **Grid view** — Thumbnail grid with photo/video type badges and save buttons
-- **Full-screen viewer** — Swipe through statuses with video playback (ExoPlayer)
-- **Save to gallery** — One-tap save to Pictures/WASSaver folder
-- **Repost to WhatsApp** — Share directly back to WhatsApp
-- **Share** — Share to any app via Android share sheet
+## Main Features
 
-### 🖼️ Media Browser
-- Browse WhatsApp's private media folders (Images/Private & Video/Private)
-- View once photos and videos — save them before they disappear
-- Separate permission grants for image and video folders
+### Status Viewer
 
-### 💾 Saved Statuses
-- Browse all previously saved statuses with media filters
-- Multi-select mode for bulk deletion
-- Individual delete with confirmation
+- Switch between WhatsApp and WA Business
+- Filter by all, photos, or videos
+- Open statuses in a full-screen viewer
+- Save, repost, or share media directly
+- Multi-select for bulk save and share
 
-### ✂️ Status Splitter
-- **Split long videos into 90-second parts** perfect for WhatsApp Status
-- Pick any video from your gallery or file manager
-- Shows video preview, duration, and estimated number of parts
-- Uses Android's built-in MediaExtractor + MediaMuxer (no FFmpeg needed)
-- **Preserves original quality** — no re-encoding, just fast stream copying
-- Share each part directly to WhatsApp Status with one tap
-- Progress indicator during splitting
+### Media Browser
 
-### 🗑️ Deleted Messages Recovery
-- **Capture WhatsApp messages via notification listener**
-- Even if the sender deletes a message, you still have a copy
-- **Opt-in feature** — disabled by default, user must explicitly enable it
-- Messages stored **locally only** — nothing sent to any server
-- **Grouped by sender** — contact list view like WhatsApp chat list
-- Tap into any contact to see chat-style message bubbles (oldest first)
-- **Auto-refreshes every 3 seconds** when new messages arrive
-- Timestamps with seconds precision for proper ordering
-- **Search** across all messages and contacts
-- **Clear per-chat** — delete all messages from one sender
-- **Clear all** — wipe everything
-- **Disable capture** anytime with one tap
-- Supports both WhatsApp and WA Business
-- Detects group messages and shows sender + group name
+- Browse WhatsApp private image and video folders
+- Save media before it disappears
+- Separate access flow for image and video folders
+- Search, sort, and bulk actions
 
-### 💬 Direct Message
-- Send a message to any phone number without saving it as a contact
-- Support for WhatsApp and WA Business
-- Country code + phone number input with optional message
+### Saved Statuses
 
-### 🔄 Check for Updates
-- Checks for new releases from GitHub (`LeoAristocrat/WASSaver-Android/releases`)
-- Shows current version vs latest version
-- Release history with "INSTALLED" badge on current version
-- Download APK or view release notes directly
-- Uses GitHub API — no external dependencies
+- Browse everything you have saved in one place
+- Search and sort saved items
+- Multi-select and bulk delete
 
-### ℹ️ About
-- App info, version, and feature list
-- Developer credits
-- Links to GitHub source code and issue tracker
+### Deleted Messages
 
-### 🎨 Design
-- **Dark/Light theme** — WhatsApp-inspired green color palette, follows system theme
-- Material 3 / Material You design language
-- Smooth back navigation on all screens
+- Capture WhatsApp notifications locally on your device
+- Group messages by sender
+- Search chats and messages
+- Clear individual chats or wipe everything
+- Works only after you explicitly enable it
+
+### Direct Message
+
+- Open a chat with any number without saving it
+- Supports WhatsApp and WA Business
+- Optional pre-filled message
+
+### Updates
+
+- Checks the latest releases from GitHub
+- Shows current version, latest release, and release history
 
 ## Tech Stack
 
-- **Kotlin** + **Jetpack Compose** + **Material 3**
-- **Coil** for image loading & video thumbnails
-- **Media3/ExoPlayer** for video playback
-- **MediaExtractor + MediaMuxer** for video splitting (zero external dependencies)
-- **NotificationListenerService** for deleted message capture
-- **Storage Access Framework (SAF)** for Android 11+ compatibility
-- **MVVM architecture** with ViewModels and StateFlow
-- No external networking library — uses built-in `HttpURLConnection` + `org.json`
+- Kotlin
+- Jetpack Compose
+- Material 3
+- Coil
+- Media3 / ExoPlayer
+- Storage Access Framework
+- MVVM with `ViewModel` and `StateFlow`
+
+## Requirements
+
+- Android 8.0+ (API 26+)
+- WhatsApp or WhatsApp Business installed
 
 ## Permissions
 
 | Permission | Purpose |
 |---|---|
-| `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` | Access WhatsApp status files |
-| `READ_EXTERNAL_STORAGE` (≤ API 32) | Legacy storage access |
-| `INTERNET` | Check for app updates via GitHub API |
-| `BIND_NOTIFICATION_LISTENER_SERVICE` | Deleted message capture (opt-in) |
-| `REQUEST_INSTALL_PACKAGES` | Install APK updates |
+| `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` | Access status and media files |
+| `READ_EXTERNAL_STORAGE` | Legacy support on older Android versions |
+| `INTERNET` | Check GitHub releases |
+| `BIND_NOTIFICATION_LISTENER_SERVICE` | Deleted message recovery |
+| `REQUEST_INSTALL_PACKAGES` | Install downloaded updates |
 
-## Requirements
+## Releases
 
-- Android 8.0 (API 26) or higher
-- WhatsApp / WhatsApp Business installed
+The GitHub Actions workflow automatically:
 
-## CI/CD — GitHub Actions
+- builds a signed release APK on `main`
+- creates a GitHub Release when you push a tag like `v1.0.4`
+- names the APK from the tag, for example `WASaver-v1.0.4.apk`
 
-The project includes a GitHub Actions workflow (`.github/workflows/build.yml`) that automatically builds a signed release APK.
+### Required GitHub Secrets
 
-### Setup GitHub Secrets
+Add these in `Settings > Secrets and variables > Actions`:
 
-Go to your repo → **Settings → Secrets and variables → Actions** and add these 4 secrets:
+- `KEYSTORE_BASE64`
+- `KEYSTORE_PASSWORD`
+- `KEY_ALIAS`
+- `KEY_PASSWORD`
 
-| Secret Name | Description |
-|---|---|
-| `KEYSTORE_BASE64` | Your keystore file encoded as base64 |
-| `KEYSTORE_PASSWORD` | Keystore store password |
-| `KEY_ALIAS` | Key alias name |
-| `KEY_PASSWORD` | Key password |
-
-### How to encode your keystore as base64
+### Create a Release
 
 ```bash
-# On Linux/Mac:
-base64 -i your-keystore.jks | tr -d '\n'
-
-# On Windows (PowerShell):
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("your-keystore.jks"))
+git tag -a v1.0.4 -m "Release v1.0.4"
+git push origin v1.0.4
 ```
 
-Copy the output and paste it as the `KEYSTORE_BASE64` secret.
+## Repository Rename Note
 
-### How it works
-
-- **On every push to `main`** — Builds signed APK, uploads as artifact
-- **On tag push (`v*`)** — Builds signed APK + creates a GitHub Release with the APK attached
-- **Manual trigger** — Use "Run workflow" button in Actions tab
-
-### Creating a release
+If you renamed the repository from `WASSaver-Android` to `WASaver-Android`, update your local remote:
 
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
+git remote set-url origin https://github.com/LeoAristocrat/WASaver-Android.git
 ```
 
-This will trigger the workflow, build a signed `WASSaver-v1.0.1.apk`, and create a GitHub Release automatically.
+## Roadmap
 
-## Changelog
-
-### v1.0.1
-- ✂️ Status Splitter — split videos into 90s parts for WhatsApp Status
-- 🗑️ Deleted Messages Recovery — capture messages via notification listener
-- 🔄 Update Checker — check GitHub releases for updates
-- 🏠 Home Menu Dashboard — card-based navigation
-- ℹ️ About Screen — app info and credits
-- Auto-refresh messages, seconds-precision timestamps
-- Removed bottom tab navigation in favor of menu dashboard
-
-### v1.0.0
-- Initial release
-- Status viewer, media browser, saved statuses
-- Direct message, dark/light theme
+- More visual polish across secondary screens
+- Better onboarding for permissions
+- Continued cleanup of release/update flows
 
 ---
 
-Built with ❤️ by Leo Aristocrat
-
-Credits: [Claude Opus 4](https://anthropic.com) by [Anthropic](https://anthropic.com)
+Built by Leo Aristocrat
